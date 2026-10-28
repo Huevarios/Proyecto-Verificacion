@@ -1,5 +1,7 @@
+
 import { useState } from "react"
 import Tarea, { type TareaType} from "./Componentes/Tarea";
+import { actualizarTareas, validarTarea } from "./logica";
 
 export default function App() {
 
@@ -7,20 +9,18 @@ export default function App() {
   const [texto, setTexto] = useState('');
 
   function cambiarCompletado(id: string){
-   
-    const tareasActualizadas = tareas.map((tarea)=>{
-      if(tarea.id == id) {
-        return {...tarea, isCompleted: !tarea.isCompleted}
-      }else {
-        return tarea;
-      }
-    })
+    const tareasActualizadas = actualizarTareas(tareas, id);
+    setTareas(tareasActualizadas);
+  }
 
+  function editarTarea(id: string, nuevoTitulo: string){
+    if(nuevoTitulo.trim() == "") return;
+
+    const tareasActualizadas = actualizarTareas(tareas, id, nuevoTitulo);
     setTareas(tareasActualizadas);
   }
 
   function borrarTarea(id: string) {
-
     setTareas(tareas.filter((t)=> t.id != id))
   }
 
@@ -30,21 +30,22 @@ export default function App() {
   }
 
   function agregarTarea(){
-    if(texto == '') return;
-    setTareas([...tareas, {id: crypto.randomUUID(), titulo: texto, isCompleted: false}])
-
-    setTexto('');
+    const nuevasTareas = validarTarea(texto, tareas);
+    if(nuevasTareas){
+      setTareas(nuevasTareas);
+      setTexto('');
+    }
   }
 
   return <main>
      <h1>Dia de Muertos</h1>
      <h2>Pendientes: {checarPendientes()}</h2>
 
-    <input type="text" value={texto} onChange={(e)=>{setTexto(e.target.value)}}/>
+     <input type="text" value={texto} onChange={(e)=>{setTexto(e.target.value)}}/>
      <button onClick={agregarTarea}>Agregar tarea</button>
 
      <ul>
-      {tareas.map((t)=><Tarea key={t.id} infoTarea={t} cambiarCompletado={cambiarCompletado} borrarTarea={borrarTarea}/>)}
+      {tareas.map((t)=><Tarea key={t.id} infoTarea={t} cambiarCompletado={cambiarCompletado} borrarTarea={borrarTarea} editarTarea={editarTarea}/>)}
      </ul>
 
     </main>
